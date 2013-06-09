@@ -58,6 +58,14 @@ class Database
     private $connection=NULL;
 
     /**
+     * An array of all methods that will map to each other.
+     * @var array
+     */
+    private $aliasedFunctions=array(
+        'q' => 'query'
+    );
+
+    /**
      * The constructor for the database object this will be used in order to set
      * any desired configuration settings and then it will attempt to make a
      * connection to the database.
@@ -822,6 +830,17 @@ class Database
             throw $exception;            
         }
     }
+
+    /**
+     * Overrides the default call method, in order allow for aliasing of functions.
+     * @var $method The method that we will be calling
+     * @var $parameters The parameters that were passed into the function
+     */
+    public function __call($method, $parameters)
+    {
+        // Call the method that we are aliasing
+        return call_user_func_array(array($this, $this->aliasedFunctions[$method]), $parameters);
+    }
 }
 
 /**
@@ -1261,6 +1280,26 @@ class DatabaseQuery
 	 * @var PDOStatement
 	 */
 	public $statement=NULL;
+
+    /**
+     * An array of variables will map to each other.
+     * @var array
+     */
+    private $aliasedVariables=array(
+        'n' => 'numberOfRows'
+        , 's' => 'success'
+        , 'ex' => 'exception'
+        , 'id' => 'insertIds'
+    );
+
+    /**
+     * An array of all methods that will map to each other.
+     * @var array
+     */
+    private $aliasedFunctions=array(
+        'arr' => 'getArray'
+        , 'all' => 'retrieveAllRows'
+    );
 	
 	/**
 	 * This function is used in order to retrieve a single row from a result set.
@@ -1290,6 +1329,28 @@ class DatabaseQuery
 		// Close the cursor
 		$this->statement->closeCursor();
 	}
+
+    /**
+     * Overrides the default getter in order to allow for aliasing of some
+     * variables.
+     * @var $key The key value that we will be using to look up in the alias array.
+     */
+    public function __get($key)
+    {
+        // Return the value that the aliased key is mapped to
+        return $this->{$this->aliasedVariables[$key]};
+    }
+
+    /**
+     * Overrides the default call method, in order allow for aliasing of functions.
+     * @var $method The method that we will be calling
+     * @var $parameters The parameters that were passed into the function
+     */
+    public function __call($method, $parameters)
+    {
+        // Call the method that we are aliasing
+        return call_user_func_array(array($this, $this->aliasedFunctions[$method]), $parameters);
+    }
 }
 
 /**
