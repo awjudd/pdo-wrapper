@@ -1337,8 +1337,15 @@ class DatabaseQuery
      */
     public function __get($key)
     {
-        // Return the value that the aliased key is mapped to
-        return $this->{$this->aliasedVariables[$key]};
+        // Check if the aliased variable exists
+        if(isset($this->aliasedVariables[$key]))
+        {
+            // Return the alaised value
+            return $this->{$this->aliasedVariables[$key]};
+        }
+
+        // Otherwise call the parent to see if it has any values
+        return parent::__get($key)
     }
 
     /**
