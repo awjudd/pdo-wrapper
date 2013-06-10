@@ -19,7 +19,7 @@
  * @copyright Andrew Judd, 2012
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @package Database
- * @version 3.0.0
+ * @version 3.0.1
  *
  * For full documentation and updates please visit:
  * http://development.andrewjudd.ca
