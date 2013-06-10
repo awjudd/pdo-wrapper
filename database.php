@@ -1345,7 +1345,7 @@ class DatabaseQuery
         }
 
         // Otherwise call the parent to see if it has any values
-        return parent::__get($key)
+        return parent::__get($key);
     }
 
     /**
