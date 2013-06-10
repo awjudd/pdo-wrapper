@@ -19,7 +19,7 @@
  * @copyright Andrew Judd, 2012
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @package Database
- * @version 3.0.1
+ * @version 3.1.0
  *
  * For full documentation and updates please visit:
  * http://development.andrewjudd.ca
@@ -659,7 +659,7 @@ class Database
     	try
     	{
     		// Prepare the statement
-    		$statement=$this->connection->prepare($query->query);
+    		$statement=$this->connection->prepare($query->query, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
     		
     		// Bind the parameters
     		$parameterCount=count($query->parameters);
@@ -1225,7 +1225,7 @@ class DatabaseLogEntry
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @package Database
  */
-class DatabaseQuery
+class DatabaseQuery implements ArrayAccess
 {
 	/**
 	 * The query which will be run.
@@ -1282,10 +1282,15 @@ class DatabaseQuery
 	public $statement=NULL;
 
     /**
+     * The result set from past retrievals
+     */
+    private $results=array();
+
+    /**
      * An array of variables will map to each other.
      * @var array
      */
-    private $aliasedVariables=array(
+    private $aliasedVariables=array (
         'n' => 'numberOfRows'
         , 's' => 'success'
         , 'ex' => 'exception'
@@ -1306,9 +1311,9 @@ class DatabaseQuery
 	 * @param int $fetchStyle Controls how the next row will be returned to the caller.
 	 * @return array An array containing a single row from the caller's query
 	 */
-	public function getArray($fetchStyle=PDO::FETCH_ASSOC)
+	public function getArray($fetchStyle=PDO::FETCH_ASSOC, $orientation=PDO::FETCH_ORI_NEXT, $offset = 1)
 	{
-		return $this->statement->fetch($fetchStyle);
+		return $this->statement->fetch($fetchStyle, $orientation, $offset);
 	}
 	
 	/**
@@ -1330,6 +1335,68 @@ class DatabaseQuery
 		$this->statement->closeCursor();
 	}
 
+    public function offsetExists($offset)
+    {
+        // Check if the offset is numeric
+        if((int)($offset)==$offset)
+        {
+            // It is, so look to see if the offset is within the range
+            return $this->numberOfRows >= $offset;
+        }
+
+        // It wasn't an integer, so try to grab it from the first element
+        if($this->numberOfRows>0)
+        {
+            return isset($this[0][$offset]);
+        }
+        
+        // Otherwise it doesn't exist
+        return FALSE;
+    }
+
+    public function offsetGet($offset)
+    {
+        // Check if the offset is numeric
+        if((int)($offset)==$offset)
+        {
+            // Check if we already grabbed it
+            if(isset($this->result[$offset]))
+            {
+                return $this->result[$offset];
+            }
+
+            // Grab the value that is associated with the offset
+            return $this->results[$offset] = $this->statement->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_REL, $offset);
+        }
+
+        // It wasn't an integer, so try to grab it from the first element
+        if($this->numberOfRows>0)
+        {
+            $this->results[0] = $this[0];
+
+            return $this->results[0][$offset];
+        }
+        
+        // Otherwise it doesn't exist
+        return FALSE;
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        // This object is read-only, so throw an exception if called
+        throw new Exception('This object is read-only.');
+    }
+
+    public function offsetUnset($offset)
+    {
+        // Check if the value exists
+        if(isset($this->results[$offset]))
+        {
+            // Clear the offset value
+            unset($this->results[$offset]);
+        }
+    }
+
     /**
      * Overrides the default getter in order to allow for aliasing of some
      * variables.
@@ -1343,9 +1410,6 @@ class DatabaseQuery
             // Return the alaised value
             return $this->{$this->aliasedVariables[$key]};
         }
-
-        // Otherwise call the parent to see if it has any values
-        return parent::__get($key);
     }
 
     /**
