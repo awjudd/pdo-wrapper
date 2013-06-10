@@ -1366,7 +1366,7 @@ class DatabaseQuery implements ArrayAccess
             }
 
             // Grab the value that is associated with the offset
-            return $this->results[$offset] = $this->statement->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_REL, $offset);
+            return $this->results[$offset] = $this->getArray(PDO::FETCH_ASSOC, PDO::FETCH_ORI_ABS, $offset);
         }
 
         // It wasn't an integer, so try to grab it from the first element
