@@ -702,6 +702,9 @@ class Database
     		
     		// Find out the last insert id
     		$query->insertId=$this->connection->lastInsertId();
+
+            // Give the object access to the configuration
+            $query->configuration=$this->config;
     		
     		// Add 1 to the query count
     		++$this->queryCount;
@@ -1287,6 +1290,16 @@ class DatabaseQuery implements ArrayAccess
     private $results=array();
 
     /**
+     * The configuration as set by the user
+     */
+    public $configuration=NULL;
+
+    /**
+     * Used internally to keep track of the row number that we are currently on.
+     */
+    private $rowNumber=0;
+
+    /**
      * An array of variables will map to each other.
      * @var array
      */
@@ -1313,6 +1326,11 @@ class DatabaseQuery implements ArrayAccess
 	 */
 	public function getArray($fetchStyle=PDO::FETCH_ASSOC, $orientation=PDO::FETCH_ORI_NEXT, $offset = 1)
 	{
+        if($orientation===PDO::FETCH_ORI_NEXT)
+        {
+            ++$this->rowNumber;
+        }
+
 		return $this->statement->fetch($fetchStyle, $orientation, $offset);
 	}
 	
@@ -1357,12 +1375,24 @@ class DatabaseQuery implements ArrayAccess
     public function offsetGet($offset)
     {
         // Check if the offset is numeric
-        if((int)($offset)==$offset)
+        if((int)($offset)===$offset)
         {
             // Check if we already grabbed it
             if(isset($this->result[$offset]))
             {
                 return $this->result[$offset];
+            }
+
+            // There are active bugs in mysql and sqlite that don't allwo the cursors to work
+            // so, we will need to cycle through each one until the offset to get the one we need.
+            if(in_array(strtolower($this->configuration->engine), array('mysql', 'sqlite')))
+            {
+                for($x=$this->rowNumber; $x<=$offset; ++$x)
+                {
+                    $this->results[$x]=$this->getArray(PDO::FETCH_ASSOC);
+                }
+
+                return $this->results[$offset];
             }
 
             // Grab the value that is associated with the offset

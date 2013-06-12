@@ -29,7 +29,7 @@ class BasicQueryTest extends PHPUnit_Framework_TestCase
     {
         // Query the database
         $res=$this->db->query('SELECT * FROM foo WHERE bar={0:ud}', 0);
-        
+
         // Make sure that something is returned
         $this->assertNotNull($res);
         
@@ -107,5 +107,19 @@ class BasicQueryTest extends PHPUnit_Framework_TestCase
     	{
     		return false;
     	}
+    }
+
+    public function testQueryResults()
+    {
+        // Query the database
+        $res=$this->db->query('SELECT * FROM foo ORDER BY bar ASC');
+
+        // Make sure that something is returned
+        $this->assertNotNull($res);
+        $this->assertEquals($res['foo'], 'asdf');
+        $this->assertEquals($res[2]['foo'], 'Testing');
+        
+        // And that it is of type DatabaseQuery
+        $this->assertTrue($res instanceof DatabaseQuery);
     }
 }
