@@ -1,0 +1,21 @@
+{
+    "name": "awjudd/pdo-wrapper",
+    "description": "A simple PDO database wrapper",
+    "keywords": ["php", "database", "pdo", "wrapper"],
+    "type": "library",
+    "require": {
+        "php": "5.6.*"
+    },
+    "autoload": {
+        "psr-2": {
+            "Awjudd": "src/"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andrew Judd",
+            "email": "contact@andrewjudd.ca"
+        }
+    ]
+}
