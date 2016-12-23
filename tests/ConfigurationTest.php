@@ -1,7 +1,7 @@
 <?php
 
 use Awjudd\PDO\Database;
-use Awjudd\PDO\DatabaseConfiguration;
+use Awjudd\PDO\Database\Configuration;
 
 class ConfigurationTest extends PHPUnit_Framework_TestCase
 {
@@ -17,7 +17,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $config = parse_ini_file($this->configFile);
 
         // Build the Configuration from an array
-        $config = DatabaseConfiguration::fromArray($config);
+        $config = Configuration::fromArray($config);
 
         $this->assertEquals('127.0.0.1', $config->hostname);
         $this->assertEquals('mysql', $config->engine);
@@ -29,10 +29,10 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $config->queryMode);
 
         // To change it on the older pages
-        $config->queryMode = DatabaseConfiguration::QUERY_CLASSIC;
+        $config->queryMode = Configuration::QUERY_CLASSIC;
 
         // Then default it in your site to for the new parser:
-        $config->queryMode = DatabaseConfiguration::QUERY_DEFAULT;
+        $config->queryMode = Configuration::QUERY_DEFAULT;
     }
 
     /**
@@ -42,7 +42,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     public function testConfigureINIFile()
     {
         // Build the Configuration from an INI file
-        $config = DatabaseConfiguration::fromINIFile($this->configFile);
+        $config = Configuration::fromINIFile($this->configFile);
 
         $this->assertEquals('127.0.0.1', $config->hostname);
         $this->assertEquals('mysql', $config->engine);
@@ -63,7 +63,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $file = file_get_contents($this->configFile);
 
         // Build the Configuration from an INI string
-        $config = DatabaseConfiguration::fromINIString($file);
+        $config = Configuration::fromINIString($file);
 
         $this->assertEquals('127.0.0.1', $config->hostname);
         $this->assertEquals('mysql', $config->engine);
@@ -89,7 +89,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         // Overwrite the error reporting level (invalid)
         $config['ErrorReporting'] = 8;
 
-        DatabaseConfiguration::fromArray($config);
+        Configuration::fromArray($config);
     }
 
     /**
@@ -107,7 +107,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         // Overwrite the query logging boolean value
         $config['LogQueries'] = 9;
 
-        DatabaseConfiguration::fromArray($config);
+        Configuration::fromArray($config);
     }
 
     /**
@@ -124,7 +124,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         unset($config['ErrorLog']);
 
         // Overwrite the query logging boolean value
-        $config['ErrorReporting'] = DatabaseConfiguration::ERRORS_LOGFILE;
-        DatabaseConfiguration::fromArray($config);
+        $config['ErrorReporting'] = Configuration::ERRORS_LOGFILE;
+        Configuration::fromArray($config);
     }
 }

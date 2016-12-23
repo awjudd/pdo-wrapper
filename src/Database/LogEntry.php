@@ -1,6 +1,6 @@
 <?php
 
-namespace Awjudd\PDO;
+namespace Awjudd\PDO\Database;
 
 /**
  * Base object used in the logging of database events (if logging is enabled).
@@ -9,7 +9,7 @@ namespace Awjudd\PDO;
  * @copyright Andrew Judd, 2012
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  */
-class DatabaseLogEntry
+class LogEntry
 {
     /**
      * The number of milliseconds it took to execute the step.

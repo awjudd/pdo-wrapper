@@ -1,6 +1,6 @@
 <?php
 
-namespace Awjudd\PDO;
+namespace Awjudd\PDO\Database;
 
 use PDO;
 use ArrayAccess;
@@ -13,7 +13,7 @@ use ArrayAccess;
  * @copyright Andrew Judd, 2012
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  */
-class DatabaseQuery implements ArrayAccess
+class Query implements ArrayAccess
 {
     /**
      * The query which will be run.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Awjudd\PDO;
+namespace Awjudd\PDO\Database;
 
 use Exception;
 use InvalidArgumentException;
@@ -13,7 +13,7 @@ use InvalidArgumentException;
  * @copyright Andrew Judd, 2012
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  */
-class DatabaseConfiguration
+class Configuration
 {
     /**
      * Constants defining the degree of error reporting.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Awjudd\PDO;
+namespace Awjudd\PDO\Database;
 
 /**
  * Used as an enumeration for all of the different keys which are available
@@ -10,7 +10,7 @@ namespace Awjudd\PDO;
  * @copyright Andrew Judd, 2012
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  */
-class DatabaseValueType
+class ValueType
 {
     /**
      * The type code for an escaped string.

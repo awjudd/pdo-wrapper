@@ -6,6 +6,10 @@ use PDO;
 use Exception;
 use OutOfBoundsException;
 use InvalidArgumentException;
+use Awjudd\PDO\Database\Query;
+use Awjudd\PDO\Database\LogEntry;
+use Awjudd\PDO\Database\ValueType;
+use Awjudd\PDO\Database\Configuration;
 
 /**
  * Database class for all database queries.
@@ -35,17 +39,24 @@ use InvalidArgumentException;
 class Database
 {
     /**
-     * An instance of the DatabaseConfiguration object which will be used internally
+     * An instance of the database object if used statically.
+     *
+     * @var        Database
+     */
+    private static $instance = null;
+
+    /**
+     * An instance of the Configuration object which will be used internally
      * to retrieve any settings as specified by the user.
      *
-     * @var DatabaseConfiguration
+     * @var Configuration
      */
     private $config = null;
 
     /**
      * Where all of the query logging information will be stored.
      *
-     * @var array<DatabaseLogEntry>
+     * @var array<LogEntry>
      */
     private $log = array();
 
@@ -75,25 +86,41 @@ class Database
      *
      * @var array
      */
-    private $aliasedFunctions = array(
+    private $aliasedFunctions = [
         'q' => 'query',
-    );
+    ];
 
     /**
      * The constructor for the database object this will be used in order to set
      * any desired configuration settings and then it will attempt to make a
      * connection to the database.
      *
-     * @param DatabaseConfiguration $config An object which contains all of the
+     * @param Configuration $config An object which contains all of the
      *                                      configuration settings for the instance
      */
-    public function __construct(DatabaseConfiguration $config)
+    public function __construct(Configuration $config)
     {
         // Set the configuration object
         $this->config = $config;
 
         // Try to connect to the database
         $this->__connect();
+    }
+
+    /**
+     * Creates/retrieves a static instance of the database object
+     *
+     * @param      \Awjudd\PDO\Database\Configuration  $config  The configuration
+     *
+     * @return     \Awjudd\PDO\Database                         The instance.
+     */
+    public static function getInstance(Configuration $config = null)
+    {
+        if(is_null(static::$instance)) {
+            static::$instance = new Database($config);
+        }
+
+        return static::$instance;
     }
 
     /**
@@ -109,7 +136,7 @@ class Database
      * (the number of these is based on however many parameters there are in
      * the database query)
      *
-     * @return DatabaseQuery An object which contains all information about the
+     * @return Query An object which contains all information about the
      *                       query which was just executed
      */
     public function query()
@@ -129,7 +156,7 @@ class Database
             // Run the query based on the parsed query
             $this->__run($parsedQuery);
 
-            // Return the hydrated DatabaseQuery object
+            // Return the hydrated Query object
             return $parsedQuery;
         } catch (InvalidArgumentException $e) {
             $this->__error($e);
@@ -152,7 +179,7 @@ class Database
     /**
      * Retrieves the query execution log.
      *
-     * @return array<DatabaseLogEntry>
+     * @return array<LogEntry>
      */
     public function getLog()
     {
@@ -257,7 +284,7 @@ class Database
      * @throws Exception|null
      * @throws InvalidArgumentException
      *
-     * @return DatabaseQuery A hydrated object with all of the database query information
+     * @return Query A hydrated object with all of the database query information
      *                       prepared
      */
     private function __parse(array $query)
@@ -267,7 +294,7 @@ class Database
 
         // The first element of the array will be the query
         switch ($this->config->queryMode) {
-            case DatabaseConfiguration::QUERY_CLASSIC:
+            case Configuration::QUERY_CLASSIC:
                 $parsedQuery = $this->__parseClassic($query);
                 break;
             default:
@@ -276,7 +303,7 @@ class Database
         }
 
         // Check if the parsed query was built
-        if ($parsedQuery === null || !($parsedQuery instanceof DatabaseQuery)) {
+        if ($parsedQuery === null || !($parsedQuery instanceof Query)) {
             // No parsed query means no query to run
             throw new InvalidArgumentException('The query was not parsed');
         }
@@ -298,12 +325,12 @@ class Database
      * @throws OutOfBoundsException
      * @throws InvalidArgumentException
      *
-     * @return DatabaseQuery The hydrated database query object
+     * @return Query The hydrated database query object
      */
     private function __parseBasic(array $query)
     {
         // The object to hydrate
-        $obj = new DatabaseQuery();
+        $obj = new Query();
 
         // Whether or not the user is defining the location
         $locationBinding = false;
@@ -397,12 +424,12 @@ class Database
      *
      * @throws OutOfBoundsException
      *
-     * @return DatabaseQuery The hydrated database query object
+     * @return Query The hydrated database query object
      */
     private function __parseClassic(array $query)
     {
         // The object to hydrate
-        $obj = new DatabaseQuery();
+        $obj = new Query();
 
         // Set the original query to the first value of the array
         $obj->query = $obj->originalQuery = $query[0];
@@ -470,53 +497,53 @@ class Database
         $type = null;
 
         switch (strtolower($typecode)) {
-            case DatabaseValueType::$SIGNED_INTEGER:
+            case ValueType::$SIGNED_INTEGER:
                 $regex .= '/^[-+]?[0-9]+$/';
                 $type = 'integer';
                 break;
-            case DatabaseValueType::$UNSIGNED_INTEGER:
+            case ValueType::$UNSIGNED_INTEGER:
                 $regex = '/^[0-9]+$/';
                 $type = 'unsigned integer';
                 break;
-            case DatabaseValueType::$SIGNED_DECIMAL:
+            case ValueType::$SIGNED_DECIMAL:
                 $regex .= '/^[-+]?[0-9]+(\.[0-9]+)?$/';
                 $type = 'decimal';
                 break;
-            case DatabaseValueType::$UNSIGNED_DECIMAL:
+            case ValueType::$UNSIGNED_DECIMAL:
                 $regex = '/^[0-9]+(\.[0-9]+)?$/';
                 $type = 'unsigned decimal';
                 break;
             // Handle the lists
-            case DatabaseValueType::$VALUE_LIST:
-            case DatabaseValueType::$VALUE_LIST_SIGNED_DECIMAL:
-            case DatabaseValueType::$VALUE_LIST_UNSIGNED_DECIMAL:
-            case DatabaseValueType::$VALUE_LIST_SIGNED_INTEGER:
-            case DatabaseValueType::$VALUE_LIST_UNSIGNED_INTEGER:
-            case DatabaseValueType::$VALUE_LIST_STRING:
-            case DatabaseValueType::$VALUE_LIST_ESCAPED_STRING:
+            case ValueType::$VALUE_LIST:
+            case ValueType::$VALUE_LIST_SIGNED_DECIMAL:
+            case ValueType::$VALUE_LIST_UNSIGNED_DECIMAL:
+            case ValueType::$VALUE_LIST_SIGNED_INTEGER:
+            case ValueType::$VALUE_LIST_UNSIGNED_INTEGER:
+            case ValueType::$VALUE_LIST_STRING:
+            case ValueType::$VALUE_LIST_ESCAPED_STRING:
                 // Grab the list of elements
                 $values = is_array($value) ? $value : explode(',', $value);
 
                 // Figure out which data type the values should be
                 switch (strtolower($typecode)) {
-                    case DatabaseValueType::$VALUE_LIST:
-                    case DatabaseValueType::$VALUE_LIST_STRING:
-                        $typecode = DatabaseValueType::$STRING;
+                    case ValueType::$VALUE_LIST:
+                    case ValueType::$VALUE_LIST_STRING:
+                        $typecode = ValueType::$STRING;
                         break;
-                    case DatabaseValueType::$VALUE_LIST_SIGNED_DECIMAL:
-                        $typecode = DatabaseValueType::$SIGNED_DECIMAL;
+                    case ValueType::$VALUE_LIST_SIGNED_DECIMAL:
+                        $typecode = ValueType::$SIGNED_DECIMAL;
                         break;
-                    case DatabaseValueType::$VALUE_LIST_UNSIGNED_DECIMAL:
-                        $typecode = DatabaseValueType::$UNSIGNED_DECIMAL;
+                    case ValueType::$VALUE_LIST_UNSIGNED_DECIMAL:
+                        $typecode = ValueType::$UNSIGNED_DECIMAL;
                         break;
-                    case DatabaseValueType::$VALUE_LIST_SIGNED_INTEGER:
-                        $typecode = DatabaseValueType::$SIGNED_INTEGER;
+                    case ValueType::$VALUE_LIST_SIGNED_INTEGER:
+                        $typecode = ValueType::$SIGNED_INTEGER;
                         break;
-                    case DatabaseValueType::$VALUE_LIST_UNSIGNED_INTEGER:
-                        $typecode = DatabaseValueType::$UNSIGNED_INTEGER;
+                    case ValueType::$VALUE_LIST_UNSIGNED_INTEGER:
+                        $typecode = ValueType::$UNSIGNED_INTEGER;
                         break;
-                    case DatabaseValueType::$VALUE_LIST_ESCAPED_STRING:
-                        $typecode = DatabaseValueType::$ESCAPED_STRING;
+                    case ValueType::$VALUE_LIST_ESCAPED_STRING:
+                        $typecode = ValueType::$ESCAPED_STRING;
                         break;
                 }
 
@@ -527,8 +554,8 @@ class Database
                 }
 
                 break;
-            case DatabaseValueType::$STRING:
-            case DatabaseValueType::$ESCAPED_STRING:
+            case ValueType::$STRING:
+            case ValueType::$ESCAPED_STRING:
                 // Do nothing
                 break;
             default:
@@ -566,30 +593,30 @@ class Database
     private function __getDataTypeCode($typecode)
     {
         switch (strtolower($typecode)) {
-            case DatabaseValueType::$SIGNED_INTEGER:
-            case DatabaseValueType::$VALUE_LIST_SIGNED_INTEGER:
-                $typecode = DatabaseValueType::$SIGNED_INTEGER;
+            case ValueType::$SIGNED_INTEGER:
+            case ValueType::$VALUE_LIST_SIGNED_INTEGER:
+                $typecode = ValueType::$SIGNED_INTEGER;
                 break;
-            case DatabaseValueType::$UNSIGNED_INTEGER:
-            case DatabaseValueType::$VALUE_LIST_UNSIGNED_INTEGER:
-                $typecode = DatabaseValueType::$UNSIGNED_INTEGER;
+            case ValueType::$UNSIGNED_INTEGER:
+            case ValueType::$VALUE_LIST_UNSIGNED_INTEGER:
+                $typecode = ValueType::$UNSIGNED_INTEGER;
                 break;
-            case DatabaseValueType::$SIGNED_DECIMAL:
-            case DatabaseValueType::$VALUE_LIST_SIGNED_DECIMAL:
-                $typecode = DatabaseValueType::$SIGNED_DECIMAL;
+            case ValueType::$SIGNED_DECIMAL:
+            case ValueType::$VALUE_LIST_SIGNED_DECIMAL:
+                $typecode = ValueType::$SIGNED_DECIMAL;
                 break;
-            case DatabaseValueType::$UNSIGNED_DECIMAL:
-            case DatabaseValueType::$VALUE_LIST_UNSIGNED_DECIMAL:
-                $typecode = DatabaseValueType::$UNSIGNED_DECIMAL;
+            case ValueType::$UNSIGNED_DECIMAL:
+            case ValueType::$VALUE_LIST_UNSIGNED_DECIMAL:
+                $typecode = ValueType::$UNSIGNED_DECIMAL;
                 break;
-            case DatabaseValueType::$STRING:
-            case DatabaseValueType::$VALUE_LIST:
-            case DatabaseValueType::$VALUE_LIST_STRING:
-                $typecode = DatabaseValueType::$STRING;
+            case ValueType::$STRING:
+            case ValueType::$VALUE_LIST:
+            case ValueType::$VALUE_LIST_STRING:
+                $typecode = ValueType::$STRING;
                 break;
-            case DatabaseValueType::$ESCAPED_STRING:
-            case DatabaseValueType::$VALUE_LIST_ESCAPED_STRING:
-                $typecode = DatabaseValueType::$ESCAPED_STRING;
+            case ValueType::$ESCAPED_STRING:
+            case ValueType::$VALUE_LIST_ESCAPED_STRING:
+                $typecode = ValueType::$ESCAPED_STRING;
                 break;
             default:
                 // We don't match any of the types, so invalid type
@@ -617,13 +644,13 @@ class Database
 
         switch (strtolower($typecode)) {
             // Handle the lists
-            case DatabaseValueType::$VALUE_LIST:
-            case DatabaseValueType::$VALUE_LIST_SIGNED_DECIMAL:
-            case DatabaseValueType::$VALUE_LIST_UNSIGNED_DECIMAL:
-            case DatabaseValueType::$VALUE_LIST_SIGNED_INTEGER:
-            case DatabaseValueType::$VALUE_LIST_UNSIGNED_INTEGER:
-            case DatabaseValueType::$VALUE_LIST_STRING:
-            case DatabaseValueType::$VALUE_LIST_ESCAPED_STRING:
+            case ValueType::$VALUE_LIST:
+            case ValueType::$VALUE_LIST_SIGNED_DECIMAL:
+            case ValueType::$VALUE_LIST_UNSIGNED_DECIMAL:
+            case ValueType::$VALUE_LIST_SIGNED_INTEGER:
+            case ValueType::$VALUE_LIST_UNSIGNED_INTEGER:
+            case ValueType::$VALUE_LIST_STRING:
+            case ValueType::$VALUE_LIST_ESCAPED_STRING:
                 // Grab the list of elements
                 $values = is_array($value) ? $value : explode(',', $value);
 
@@ -649,9 +676,9 @@ class Database
      * This function is used internally in order to run the query once it was
      * converted to the common form.
      *
-     * @param DatabaseQuery $query The query information in a common structure
+     * @param Query $query The query information in a common structure
      */
-    private function __run(DatabaseQuery $query)
+    private function __run(Query $query)
     {
         // Start logging
         $start = microtime();
@@ -667,15 +694,15 @@ class Database
                 $parameter = $query->parameters[$x - 1];
 
                 switch ($parameter['type']) {
-                    case DatabaseValueType::$BINARY:
+                    case ValueType::$BINARY:
                         // Attach the blob
                         $statement->bindParam($x, $parameter['value'], PDO::PARAM_LOB);
                         break;
-                    case DatabaseValueType::$SIGNED_INTEGER:
-                    case DatabaseValueType::$UNSIGNED_INTEGER:
+                    case ValueType::$SIGNED_INTEGER:
+                    case ValueType::$UNSIGNED_INTEGER:
                         $statement->bindParam($x, $parameter['value'], PDO::PARAM_INT);
                         break;
-                    case DatabaseValueType::$ESCAPED_STRING:
+                    case ValueType::$ESCAPED_STRING:
                         // Update the value so it is escaped, then fall through
                         $parameter['value'] = htmlentities($parameter['value']);
                         $statement->bindParam($x, $parameter['value'], PDO::PARAM_STR, strlen($parameter['value']));
@@ -755,7 +782,7 @@ class Database
         // Check if logging is enabled
         if ($this->config->maintainQueryLog) {
             // Create the log object
-            $entry = new DatabaseLogEntry();
+            $entry = new LogEntry();
 
             // Hydrate the object
             $entry->message = $message;
@@ -781,7 +808,7 @@ class Database
     private function __error(Exception $exception)
     {
         // Check the logging level
-        if ($this->config->errorReporting === DatabaseConfiguration::ERRORS_IGNORE) {
+        if ($this->config->errorReporting === Configuration::ERRORS_IGNORE) {
             // Ignoring all issues, so just leave
             return;
         }
@@ -806,20 +833,20 @@ class Database
             .PHP_EOL.'Line Number: '.$debug_frame['line'];
 
         // Check if they selected to echo the error message
-        if (($this->config->errorReporting & DatabaseConfiguration::ERRORS_ECHO)
-            === DatabaseConfiguration::ERRORS_ECHO) {
+        if (($this->config->errorReporting & Configuration::ERRORS_ECHO)
+            === Configuration::ERRORS_ECHO) {
             // They chose to echo the errors, so echo it
             echo $message;
         }
 
-        if (($this->config->errorReporting & DatabaseConfiguration::ERRORS_LOGFILE)
-            === DatabaseConfiguration::ERRORS_LOGFILE) {
+        if (($this->config->errorReporting & Configuration::ERRORS_LOGFILE)
+            === Configuration::ERRORS_LOGFILE) {
             // Throw the results at the end of the log file
             file_put_contents($this->config->errorLogFile, $message.PHP_EOL, FILE_APPEND);
         }
 
-        if (($this->config->errorReporting & DatabaseConfiguration::ERRORS_EXCEPTION)
-            === DatabaseConfiguration::ERRORS_EXCEPTION) {
+        if (($this->config->errorReporting & Configuration::ERRORS_EXCEPTION)
+            === Configuration::ERRORS_EXCEPTION) {
             // Rethrow the exception
             throw $exception;
         }
