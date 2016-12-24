@@ -4,6 +4,7 @@ namespace Awjudd\PDO\Database;
 
 use PDO;
 use ArrayAccess;
+use InvalidArgumentException;
 
 /**
  * The handshake between each of the objects.  This holds all
@@ -237,6 +238,12 @@ class Query implements ArrayAccess
      */
     public function __call($method, $parameters)
     {
+        // Verify that the method exists
+        if(!in_array($method, $this->aliasedFunctions)) {
+            // It doesn't, so throw an exception
+            throw new InvalidArgumentException("Unknown method $method requested");
+        }
+
         // Call the method that we are aliasing
         return call_user_func_array(array($this, $this->aliasedFunctions[$method]), $parameters);
     }

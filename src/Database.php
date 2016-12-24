@@ -860,6 +860,12 @@ class Database
      */
     public function __call($method, $parameters)
     {
+        // Verify that the method exists
+        if(!in_array($method, $this->aliasedFunctions)) {
+            // It doesn't, so give an error
+            throw new InvalidArgumentException("Unknown method $method requested");
+        }
+
         // Call the method that we are aliasing
         return call_user_func_array(array($this, $this->aliasedFunctions[$method]), $parameters);
     }
