@@ -3,6 +3,7 @@
 namespace Awjudd\PDO;
 
 use PDO;
+use Closure;
 use Exception;
 use OutOfBoundsException;
 use InvalidArgumentException;
@@ -80,6 +81,20 @@ class Database
      * @var PDO
      */
     private $connection = null;
+
+    /**
+     * The hook that happens before the database query is executed.
+     * 
+     * @var        Closure
+     */
+    private $beforeHook = null;
+
+    /**
+     * The hook that happens after the database query is executed.
+     *
+     * @var        Closure
+     */
+    private $afterHook = null;
 
     /**
      * An array of all methods that will map to each other.
@@ -683,6 +698,11 @@ class Database
         // Start logging
         $start = microtime();
 
+        if($this->beforeHook !== null) {
+            $hook = $this->beforeHook;
+            $hook($query);
+        }
+
         try {
             // Prepare the statement
             $statement = $this->connection->prepare($query->query, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
@@ -743,6 +763,12 @@ class Database
 
             // Decide what to do with the error
             $this->__error($e);
+        }
+        finally {
+            if($this->afterHook !== null) {
+                $hook = $this->afterHook;
+                $hook($query);
+            }
         }
 
         // Calculate the duration of the query
@@ -868,6 +894,58 @@ class Database
 
         // Call the method that we are aliasing
         return call_user_func_array(array($this, $this->aliasedFunctions[$method]), $parameters);
+    }
+
+    /**
+     * Gets the An array of all methods that will map to each other.
+     *
+     * @return array
+     */
+    public function getAliasedFunctions()
+    {
+        return $this->aliasedFunctions;
+    }
+
+    /**
+     * Sets the An array of all methods that will map to each other.
+     *
+     * @param array $aliasedFunctions the aliased functions
+     *
+     * @return self
+     */
+    private function _setAliasedFunctions(array $aliasedFunctions)
+    {
+        $this->aliasedFunctions = $aliasedFunctions;
+
+        return $this;
+    }
+
+    /**
+     * Sets the The hook that happens before the database query is executed.
+     *
+     * @param        Closure $beforeHook the before hook
+     *
+     * @return self
+     */
+    public function setBeforeHook(Closure $beforeHook)
+    {
+        $this->beforeHook = $beforeHook;
+
+        return $this;
+    }
+
+    /**
+     * Sets the The hook that happens after the database query is executed.
+     *
+     * @param        Closure $afterHook the after hook
+     *
+     * @return self
+     */
+    public function setAfterHook(Closure $afterHook)
+    {
+        $this->afterHook = $afterHook;
+
+        return $this;
     }
 }
 

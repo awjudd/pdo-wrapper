@@ -100,7 +100,10 @@ class Query implements ArrayAccess
      * @var array
      */
     private $aliasedVariables = array(
-        'n' => 'numberOfRows', 's' => 'success', 'ex' => 'exception', 'id' => 'insertIds',
+        'n' => 'numberOfRows',
+        's' => 'success',
+        'ex' => 'exception',
+        'id' => 'insertIds',
     );
 
     /**
@@ -109,7 +112,8 @@ class Query implements ArrayAccess
      * @var array
      */
     private $aliasedFunctions = array(
-        'arr' => 'getArray', 'all' => 'retrieveAllRows',
+        'arr' => 'getArray',
+        'all' => 'retrieveAllRows',
     );
 
     /**
