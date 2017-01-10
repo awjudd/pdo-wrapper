@@ -272,7 +272,7 @@ class Database
             $this->connection = new PDO($dns, $this->config->username, $this->config->password);
 
             // The amount of time it took to connect to the database
-            $length = microtime() - $start;
+            $length = (int)microtime() - (int)$start;
 
             // Add the time spent trying to connect to the database
             $this->__addTime($length);
@@ -749,7 +749,7 @@ class Database
             ++$this->queryCount;
         } catch (PDOException $e) {
             // Calculate the duration of the query
-            $duration = microtime() - $start;
+            $duration = (int)microtime() - (int)$start;
 
             // Add it to the log
             $this->__addToLog($e->getMessage(), $duration, $query->originalQuery);
@@ -769,7 +769,7 @@ class Database
         }
 
         // Calculate the duration of the query
-        $duration = microtime() - $start;
+        $duration = (int)microtime() - (int)$start;
 
         // Determine whether or not the query is successful (based on the exception)
         $query->success = $query->exception === null;
