@@ -11,6 +11,7 @@ use Awjudd\PDO\Database\Query;
 use Awjudd\PDO\Database\LogEntry;
 use Awjudd\PDO\Database\ValueType;
 use Awjudd\PDO\Database\Configuration;
+use Awjudd\PDO\Database\ConnectionString;
 
 /**
  * Database class for all database queries.
@@ -268,8 +269,7 @@ class Database
             $start = microtime();
 
             // Build the dns
-            $dns = $this->config->engine.':host='.$this->config->hostname
-                .';dbname='.$this->config->database;
+            $dns = ConnectionString::derive($this->config);
 
             // Establish the connection
             $this->connection = new PDO($dns, $this->config->username, $this->config->password);
