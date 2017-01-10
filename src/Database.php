@@ -11,7 +11,6 @@ use Awjudd\PDO\Database\Query;
 use Awjudd\PDO\Database\LogEntry;
 use Awjudd\PDO\Database\ValueType;
 use Awjudd\PDO\Database\Configuration;
-use Awjudd\PDO\Database\ConnectionString;
 
 /**
  * Database class for all database queries.
@@ -30,10 +29,8 @@ use Awjudd\PDO\Database\ConnectionString;
  *
  *
  * @author Andrew Judd <contact@andrewjudd.ca>
- * @copyright Andrew Judd, 2012
+ * @copyright Andrew Judd, 2017
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
- *
- * @version 3.1.0
  *
  * For full documentation and updates please visit:
  * http://development.andrewjudd.ca
@@ -269,7 +266,7 @@ class Database
             $start = microtime();
 
             // Build the dns
-            $dns = ConnectionString::derive($this->config);
+            $dns = $this->config->getConnectionString();
 
             // Establish the connection
             $this->connection = new PDO($dns, $this->config->username, $this->config->password);

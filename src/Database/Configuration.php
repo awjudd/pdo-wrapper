@@ -4,6 +4,7 @@ namespace Awjudd\PDO\Database;
 
 use Exception;
 use InvalidArgumentException;
+use Awjudd\PDO\Database\ConnectionString;
 
 /**
  * Used to define all of the configuration settings for the database
@@ -311,5 +312,15 @@ class Configuration
 
         // Return the hydrated object
         return $obj;
+    }
+
+    /**
+     * Returns the connection string based on the configugration
+     *
+     * @return     string  The connection string.
+     */
+    public function getConnectionString()
+    {
+        return ConnectionString::derive($this);
     }
 }
