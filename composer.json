@@ -11,6 +11,12 @@
             "Awjudd\\PDO\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Awjudd\\PDO\\Tests\\": "tests/"
+        }
+    },
+    
     "license": "MIT",
     "authors": [
         {

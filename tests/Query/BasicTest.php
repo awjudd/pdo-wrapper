@@ -1,29 +1,19 @@
 <?php
 
+namespace Awjudd\PDO\Tests\Query;
+
 use Awjudd\PDO\Database;
 use Awjudd\PDO\Database\Query;
+use Awjudd\PDO\Tests\TestCase;
 use Awjudd\PDO\Database\Configuration;
 
-class BasicQueryTest extends PHPUnit_Framework_TestCase
+class BasicTest extends TestCase
 {
-    /**
-     * The configuration object to be used everywhere.
-     *
-     * @var Configuration
-     */
-    private $config = null;
-
-    /**
-     * The database object to use.
-     *
-     * @var Database
-     */
-    private $db = null;
-
     public function setUp()
     {
         // Create an instance of the configuration object
-        $this->config = Configuration::fromINIFile(__DIR__ . '/testconfig.ini');
+        $this->config = Configuration::fromINIFile($this->getConfigurationFile());
+
         $this->config->queryMode = Configuration::QUERY_DEFAULT;
 
         // Create an instance of the database object

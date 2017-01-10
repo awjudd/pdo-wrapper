@@ -1,12 +1,14 @@
 <?php
 
+namespace Awjudd\PDO\Tests\Configuration;
+
 use Awjudd\PDO\Database;
+use Awjudd\PDO\Tests\TestCase;
+use PHPUnit_Framework_TestCase;
 use Awjudd\PDO\Database\Configuration;
 
-class ConfigurationTest extends PHPUnit_Framework_TestCase
+class ConfigurationTest extends TestCase
 {
-    private $configFile = __DIR__ . '/testconfig.ini';
-
     /**
      * This test is used in order to test the configuration object's
      * setup through the use of an array.
@@ -14,7 +16,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     public function testConfigureArray()
     {
         // Create an instance of the configuration object
-        $config = parse_ini_file($this->configFile);
+        $config = parse_ini_file($this->getConfigurationFile());
 
         // Build the Configuration from an array
         $config = Configuration::fromArray($config);
@@ -42,7 +44,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     public function testConfigureINIFile()
     {
         // Build the Configuration from an INI file
-        $config = Configuration::fromINIFile($this->configFile);
+        $config = Configuration::fromINIFile($this->getConfigurationFile());
 
         $this->assertEquals('127.0.0.1', $config->hostname);
         $this->assertEquals('mysql', $config->engine);
@@ -60,7 +62,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
     public function testConfigureINIString()
     {
         // Load the INI file into memory
-        $file = file_get_contents($this->configFile);
+        $file = file_get_contents($this->getConfigurationFile());
 
         // Build the Configuration from an INI string
         $config = Configuration::fromINIString($file);
@@ -84,7 +86,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('InvalidArgumentException');
 
         // Load the INI file into memory
-        $config = parse_ini_file($this->configFile);
+        $config = parse_ini_file($this->getConfigurationFile());
 
         // Overwrite the error reporting level (invalid)
         $config['ErrorReporting'] = 8;
@@ -102,7 +104,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('InvalidArgumentException');
 
         // Load the INI file into memory
-        $config = parse_ini_file($this->configFile);
+        $config = parse_ini_file($this->getConfigurationFile());
 
         // Overwrite the query logging boolean value
         $config['LogQueries'] = 9;
@@ -120,7 +122,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('InvalidArgumentException');
 
         // Load the INI file into memory
-        $config = parse_ini_file($this->configFile);
+        $config = parse_ini_file($this->getConfigurationFile());
         unset($config['ErrorLog']);
 
         // Overwrite the query logging boolean value

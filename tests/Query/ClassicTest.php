@@ -1,24 +1,23 @@
 <?php
 
+namespace Awjudd\PDO\Tests\Query;
+
 use Awjudd\PDO\Database;
 use Awjudd\PDO\Database\Query;
+use Awjudd\PDO\Tests\TestCase;
 use Awjudd\PDO\Database\Configuration;
 
-class ClassicQueryTest extends PHPUnit_Framework_TestCase
+class ClassicTest extends TestCase
 {
-    private $config = null;
-    private $db = null;
-
     public function setUp()
     {
         // Create an instance of the configuration object
-        $this->config = Configuration::fromINIFile(__DIR__ . '/testconfig.ini');
-        $this->config->queryMode = Configuration::QUERY_CLASSIC;
+        $this->config = Configuration::fromINIFile($this->getConfigurationFile());
 
         // Create an instance of the database object
         $this->db = new Database($this->config);
     }
-
+    
     public function testQuery()
     {
         // Query the database
