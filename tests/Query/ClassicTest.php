@@ -16,6 +16,9 @@ class ClassicTest extends TestCase
 
         // Create an instance of the database object
         $this->db = new Database($this->config);
+
+        // Build the required database
+        $this->buildDatabase();
     }
     
     public function testQuery()

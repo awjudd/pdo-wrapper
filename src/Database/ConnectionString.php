@@ -20,6 +20,8 @@ class ConnectionString
         {
             case 'mysql':
                 return static::mysql($configuration);
+            case 'sqlite':
+                return static::sqlite($configuration);
         }
     }
 
@@ -35,6 +37,21 @@ class ConnectionString
         return sprintf(
             'mysql:host=%s;dbname=%s',
             $configuration->hostname,
+            $configuration->database
+        );
+    }
+
+    /**
+     * Derives the connection string for a SqlLite connection
+     *
+     * @param      \Awjudd\PDO\Database\Configuration  $configuration  The configuration
+     *
+     * @return     string                              The connection string
+     */
+    public static function sqlite(Configuration $configuration)
+    {
+        return sprintf(
+            'sqlite:%s',
             $configuration->database
         );
     }

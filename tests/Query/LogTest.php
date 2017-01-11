@@ -13,9 +13,6 @@ class QueryLogTest extends TestCase
     {
         // Create an instance of the configuration object
         $this->config = Configuration::fromINIFile($this->getConfigurationFile());
-
-        // Create an instance of the database object
-        $this->db = new Database($this->config);
     }
     
     public function testNoQueryLog()
@@ -25,6 +22,9 @@ class QueryLogTest extends TestCase
 
         // Create an instance of the database object
         $this->db = new Database($this->config);
+
+        // Build the required database
+        $this->buildDatabase();
 
         // Query the database
         $res = $this->db->query('SELECT * FROM foo WHERE blah IN %ld AND bar IN %lud', '0,-1,2', array(0, 1, 2));
@@ -44,6 +44,9 @@ class QueryLogTest extends TestCase
         // Create an instance of the database object
         $this->db = new Database($this->config);
 
+        // Build the required database
+        $this->buildDatabase();
+
         // Query the database
         $res = $this->db->query('SELECT * FROM foo WHERE blah IN %ld AND bar IN %lud', '0,-1,2', array(0, 1, 2));
 
@@ -54,6 +57,6 @@ class QueryLogTest extends TestCase
         $this->assertInstanceOf(Query::class, $res);
 
         // Verify that there are no elements in the log
-        $this->assertEquals(count($this->db->getLog()), 2);
+        $this->assertEquals(count($this->db->getLog()), 6);
     }
 }

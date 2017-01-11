@@ -18,6 +18,9 @@ class BasicTest extends TestCase
 
         // Create an instance of the database object
         $this->db = new Database($this->config);
+
+        // Build the required database
+        $this->buildDatabase();
     }
 
     public function testQuery()
@@ -107,6 +110,7 @@ class BasicTest extends TestCase
 
         // Make sure that something is returned
         $this->assertNotNull($res);
+        $this->assertEquals(3, $res->numberOfRows);
         $this->assertEquals($res['foo'], 'asdf');
         $this->assertEquals($res[2]['foo'], 'Testing');
 

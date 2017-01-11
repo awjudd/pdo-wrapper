@@ -22,8 +22,8 @@ class ConfigurationTest extends TestCase
         $config = Configuration::fromArray($config);
 
         $this->assertEquals('127.0.0.1', $config->hostname);
-        $this->assertEquals('mysql', $config->engine);
-        $this->assertEquals('testing', $config->database);
+        $this->assertEquals('sqlite', $config->engine);
+        $this->assertEquals(':memory:', $config->database);
         $this->assertEquals(2, $config->errorReporting);
         $this->assertEquals(true, $config->maintainQueryLog);
         $this->assertEquals('testing', $config->username);
@@ -47,8 +47,8 @@ class ConfigurationTest extends TestCase
         $config = Configuration::fromINIFile($this->getConfigurationFile());
 
         $this->assertEquals('127.0.0.1', $config->hostname);
-        $this->assertEquals('mysql', $config->engine);
-        $this->assertEquals('testing', $config->database);
+        $this->assertEquals('sqlite', $config->engine);
+        $this->assertEquals(':memory:', $config->database);
         $this->assertEquals(2, $config->errorReporting);
         $this->assertEquals(true, $config->maintainQueryLog);
         $this->assertEquals('testing', $config->username);
@@ -68,8 +68,8 @@ class ConfigurationTest extends TestCase
         $config = Configuration::fromINIString($file);
 
         $this->assertEquals('127.0.0.1', $config->hostname);
-        $this->assertEquals('mysql', $config->engine);
-        $this->assertEquals('testing', $config->database);
+        $this->assertEquals('sqlite', $config->engine);
+        $this->assertEquals(':memory:', $config->database);
         $this->assertEquals(2, $config->errorReporting);
         $this->assertEquals(true, $config->maintainQueryLog);
         $this->assertEquals('testing', $config->username);

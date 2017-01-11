@@ -26,4 +26,13 @@ class TestCase extends PHPUnit_Framework_TestCase
     {
         return __DIR__ . '/testconfig.ini';
     }
+
+    protected function buildDatabase()
+    {
+        $queries = explode(';', file_get_contents(__DIR__ . '/setup/database.sql'));
+
+        foreach($queries as $query) {
+            $this->db->query($query);
+        }
+    }
 }

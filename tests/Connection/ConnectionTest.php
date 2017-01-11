@@ -25,6 +25,8 @@ class ConnectionTest extends TestCase
         // Create an instance of the configuration object
         $config = Configuration::fromINIFile($this->getConfigurationFile());
 
+        $config->engine = 'mysql';
+
         // Change the password
         $config->password = 'roar';
 

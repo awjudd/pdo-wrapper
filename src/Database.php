@@ -702,7 +702,7 @@ class Database
 
         try {
             // Prepare the statement
-            $statement = $this->connection->prepare($query->query, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
+            $statement = $this->connection->prepare($query->query);
 
             // Bind the parameters
             $parameterCount = count($query->parameters);
@@ -733,11 +733,13 @@ class Database
             // Execute the statement
             $statement->execute();
 
+            $query->pdo = $this;
+
             // Bind the statement to the object
             $query->statement = $statement;
 
             // Find out the number of rows
-            $query->numberOfRows = $statement->rowCount();
+            $query->numberOfRows = $query->deriveRowCount();
 
             // Find out the last insert id
             $query->insertId = $this->connection->lastInsertId();

@@ -16,6 +16,9 @@ class HookTest extends TestCase
 
         // Create an instance of the database object
         $this->db = new Database($this->config);
+
+        // Build the required database
+        $this->buildDatabase();
     }
     
     public function testBeforeHookIsCalled()
@@ -26,12 +29,11 @@ class HookTest extends TestCase
             $methodCalled = true;
         };
 
-        // Create an instance of the database object
-        $db = new Database($this->config);
-        $db->setBeforeHook($hook);
+        // Connect the hook
+        $this->db->setBeforeHook($hook);
 
         // Query the database
-        $res = $db->query('SELECT * FROM foo WHERE blah IN %ld AND bar IN %lud', '0,-1,2', array(0, 1, 2));
+        $res = $this->db->query('SELECT * FROM foo WHERE blah IN %ld AND bar IN %lud', '0,-1,2', array(0, 1, 2));
 
         // Make sure the method was called
         $this->assertTrue($methodCalled);
@@ -45,12 +47,11 @@ class HookTest extends TestCase
             $methodCalled = true;
         };
 
-        // Create an instance of the database object
-        $db = new Database($this->config);
-        $db->setAfterHook($hook);
+        // Connect the hook
+        $this->db->setAfterHook($hook);
 
         // Query the database
-        $res = $db->query('SELECT * FROM foo WHERE blah IN %ld AND bar IN %lud', '0,-1,2', array(0, 1, 2));
+        $res = $this->db->query('SELECT * FROM foo WHERE blah IN %ld AND bar IN %lud', '0,-1,2', array(0, 1, 2));
 
         // Make sure the method was called
         $this->assertTrue($methodCalled);
