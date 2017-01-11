@@ -6,6 +6,9 @@
     "require": {
         "php": ">=5.6"
     },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
     "autoload": {
         "psr-4": {
             "Awjudd\\PDO\\": "src/"
@@ -23,8 +26,5 @@
             "name": "Andrew Judd",
             "email": "contact@andrewjudd.ca"
         }
-    ],
-    "require-dev": {
-        "phpdocumentor/phpdocumentor": "^2.9"
-    }
+    ]
 }
