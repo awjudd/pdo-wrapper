@@ -23,6 +23,8 @@ class Query implements ArrayAccess
      */
     public $query = null;
 
+    public $pdo = null;
+
     /**
      * An array of parameters which will be sent into the query.
      *
@@ -174,12 +176,13 @@ class Query implements ArrayAccess
     {
         // Check if the offset is numeric
         if ((int) ($offset) === $offset) {
+
             // Check if we already grabbed it
             if (isset($this->result[$offset])) {
                 return $this->result[$offset];
             }
 
-            // There are active bugs in mysql and sqlite that don't allwo the cursors to work
+            // There are active bugs in mysql and sqlite that don't allow the cursors to work
             // so, we will need to cycle through each one until the offset to get the one we need.
             if (in_array(strtolower($this->configuration->engine), array('mysql', 'sqlite'))) {
                 for ($x = $this->rowNumber; $x <= $offset; ++$x) {
@@ -217,6 +220,30 @@ class Query implements ArrayAccess
             // Clear the offset value
             unset($this->results[$offset]);
         }
+    }
+
+    public function deriveRowCount()
+    {
+        $actualQuery = strtoupper($this->query);
+
+        // Was it a select statement?
+        if(stristr($actualQuery, 'SELECT') === FALSE) {
+            // It wasn't, so we can rely on PDO
+            return $this->statement->rowCount();
+        }
+
+        if(preg_match('/SELECT COUNT\(1\) AS row_count FROM \( .+ \) row_count/i', $actualQuery) == 1) {
+            return $this->statement->fetchColumn();
+        }
+
+        // Otherwise, we need to run a COUNT(1)
+        // Build the query
+        $query = sprintf(
+            'SELECT COUNT(1) AS row_count FROM ( %s ) row_count',
+            $this->query
+        );
+
+        return $this->pdo->query($query, $this->parameters)->numberOfRows;
     }
 
     /**

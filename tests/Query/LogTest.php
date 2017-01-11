@@ -1,21 +1,20 @@
 <?php
 
+namespace Awjudd\PDO\Tests\Query;
+
 use Awjudd\PDO\Database;
 use Awjudd\PDO\Database\Query;
+use Awjudd\PDO\Tests\TestCase;
 use Awjudd\PDO\Database\Configuration;
 
-class QueryLogTest extends PHPUnit_Framework_TestCase
+class QueryLogTest extends TestCase
 {
-    private $config = null;
-    private $db = null;
-
     public function setUp()
     {
         // Create an instance of the configuration object
-        $this->config = Configuration::fromINIFile(__DIR__ . '/testconfig.ini');
-        $this->config->queryMode = Configuration::QUERY_CLASSIC;
+        $this->config = Configuration::fromINIFile($this->getConfigurationFile());
     }
-
+    
     public function testNoQueryLog()
     {
         // Disable logging
@@ -23,6 +22,9 @@ class QueryLogTest extends PHPUnit_Framework_TestCase
 
         // Create an instance of the database object
         $this->db = new Database($this->config);
+
+        // Build the required database
+        $this->buildDatabase();
 
         // Query the database
         $res = $this->db->query('SELECT * FROM foo WHERE blah IN %ld AND bar IN %lud', '0,-1,2', array(0, 1, 2));
@@ -42,6 +44,9 @@ class QueryLogTest extends PHPUnit_Framework_TestCase
         // Create an instance of the database object
         $this->db = new Database($this->config);
 
+        // Build the required database
+        $this->buildDatabase();
+
         // Query the database
         $res = $this->db->query('SELECT * FROM foo WHERE blah IN %ld AND bar IN %lud', '0,-1,2', array(0, 1, 2));
 
@@ -52,6 +57,6 @@ class QueryLogTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Query::class, $res);
 
         // Verify that there are no elements in the log
-        $this->assertEquals(count($this->db->getLog()), 2);
+        $this->assertEquals(count($this->db->getLog()), 6);
     }
 }

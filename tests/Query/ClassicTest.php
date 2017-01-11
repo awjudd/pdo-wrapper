@@ -1,39 +1,30 @@
 <?php
 
+namespace Awjudd\PDO\Tests\Query;
+
 use Awjudd\PDO\Database;
 use Awjudd\PDO\Database\Query;
+use Awjudd\PDO\Tests\TestCase;
 use Awjudd\PDO\Database\Configuration;
 
-class BasicQueryTest extends PHPUnit_Framework_TestCase
+class ClassicTest extends TestCase
 {
-    /**
-     * The configuration object to be used everywhere.
-     *
-     * @var Configuration
-     */
-    private $config = null;
-
-    /**
-     * The database object to use.
-     *
-     * @var Database
-     */
-    private $db = null;
-
     public function setUp()
     {
         // Create an instance of the configuration object
-        $this->config = Configuration::fromINIFile(__DIR__ . '/testconfig.ini');
-        $this->config->queryMode = Configuration::QUERY_DEFAULT;
+        $this->config = Configuration::fromINIFile($this->getConfigurationFile());
 
         // Create an instance of the database object
         $this->db = new Database($this->config);
-    }
 
+        // Build the required database
+        $this->buildDatabase();
+    }
+    
     public function testQuery()
     {
         // Query the database
-        $res = $this->db->query('SELECT * FROM foo WHERE bar={0:ud}', 0);
+        $res = $this->db->query('SELECT * FROM foo WHERE bar=%ud', 0);
 
         // Make sure that something is returned
         $this->assertNotNull($res);
@@ -57,7 +48,7 @@ class BasicQueryTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('OutOfBoundsException');
 
         // Query the database
-        $this->db->query('SELECT * FROM foo WHERE bar={0:ud}');
+        $this->db->query('SELECT * FROM foo WHERE bar=%ud');
     }
 
     public function testQueryInsufficientLocationParameters()
@@ -66,16 +57,16 @@ class BasicQueryTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('OutOfBoundsException');
 
         // Query the database
-        $this->db->query('SELECT * FROM foo WHERE bar={1:ud} AND blah={0:s}', 'hi');
+        $this->db->query('SELECT * FROM foo WHERE bar=%ud AND blah=%s');
     }
 
     public function testQueryInferredAndLocationParameters()
     {
         // We are expecting an exception
-        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('OutOfBoundsException');
 
         // Query the database
-        $this->db->query('SELECT * FROM foo WHERE bar={0:ud} AND blah={s}', 1);
+        $this->db->query('SELECT * FROM foo WHERE bar=%ud AND blah=%s', 1);
     }
 
     public function testQueryInvalidDataTypeParameters()
@@ -84,41 +75,16 @@ class BasicQueryTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('InvalidArgumentException');
 
         // Query the database
-        $this->db->query('SELECT * FROM foo WHERE blah={0:ud}', 'hi');
+        $this->db->query('SELECT * FROM foo WHERE blah=%ud', 'hi');
     }
 
     public function testQueryListTypeParameters()
     {
         // Query the database
-        $res = $this->db->query('SELECT * FROM foo WHERE blah IN {0:ld} AND bar IN {1:lud}', '0,-1,2', array(0, 1, 2));
+        $res = $this->db->query('SELECT * FROM foo WHERE blah IN %ld AND bar IN %lud', '0,-1,2', array(0, 1, 2));
 
         // Make sure that something is returned
         $this->assertNotNull($res);
-
-        // And that it is of type Query
-        $this->assertInstanceOf(Query::class, $res);
-    }
-
-    public function testQueryString()
-    {
-        $res = $this->db->query('SELECT bar FROM foo WHERE bar = {0:s}', 'hello');
-
-        if ($res->numberOfRows == 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public function testQueryResults()
-    {
-        // Query the database
-        $res = $this->db->query('SELECT * FROM foo ORDER BY bar ASC');
-
-        // Make sure that something is returned
-        $this->assertNotNull($res);
-        $this->assertEquals($res['foo'], 'asdf');
-        $this->assertEquals($res[2]['foo'], 'Testing');
 
         // And that it is of type Query
         $this->assertInstanceOf(Query::class, $res);

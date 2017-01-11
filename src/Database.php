@@ -29,10 +29,8 @@ use Awjudd\PDO\Database\Configuration;
  *
  *
  * @author Andrew Judd <contact@andrewjudd.ca>
- * @copyright Andrew Judd, 2012
+ * @copyright Andrew Judd, 2017
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
- *
- * @version 3.1.0
  *
  * For full documentation and updates please visit:
  * http://development.andrewjudd.ca
@@ -268,14 +266,13 @@ class Database
             $start = microtime();
 
             // Build the dns
-            $dns = $this->config->engine.':host='.$this->config->hostname
-                .';dbname='.$this->config->database;
+            $dns = $this->config->getConnectionString();
 
             // Establish the connection
             $this->connection = new PDO($dns, $this->config->username, $this->config->password);
 
             // The amount of time it took to connect to the database
-            $length = microtime() - $start;
+            $length = (int)microtime() - (int)$start;
 
             // Add the time spent trying to connect to the database
             $this->__addTime($length);
@@ -705,7 +702,7 @@ class Database
 
         try {
             // Prepare the statement
-            $statement = $this->connection->prepare($query->query, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
+            $statement = $this->connection->prepare($query->query);
 
             // Bind the parameters
             $parameterCount = count($query->parameters);
@@ -736,11 +733,13 @@ class Database
             // Execute the statement
             $statement->execute();
 
+            $query->pdo = $this;
+
             // Bind the statement to the object
             $query->statement = $statement;
 
             // Find out the number of rows
-            $query->numberOfRows = $statement->rowCount();
+            $query->numberOfRows = $query->deriveRowCount();
 
             // Find out the last insert id
             $query->insertId = $this->connection->lastInsertId();
@@ -752,7 +751,7 @@ class Database
             ++$this->queryCount;
         } catch (PDOException $e) {
             // Calculate the duration of the query
-            $duration = microtime() - $start;
+            $duration = (int)microtime() - (int)$start;
 
             // Add it to the log
             $this->__addToLog($e->getMessage(), $duration, $query->originalQuery);
@@ -772,7 +771,7 @@ class Database
         }
 
         // Calculate the duration of the query
-        $duration = microtime() - $start;
+        $duration = (int)microtime() - (int)$start;
 
         // Determine whether or not the query is successful (based on the exception)
         $query->success = $query->exception === null;
