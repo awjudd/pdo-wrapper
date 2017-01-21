@@ -117,4 +117,17 @@ class BasicTest extends TestCase
         // And that it is of type Query
         $this->assertInstanceOf(Query::class, $res);
     }
+
+    public function testQueryResultsWithParameters()
+    {
+        // Query the database
+        $res = $this->db->query('SELECT * FROM foo WHERE bar = {ud}', 12);
+
+        // Make sure that something is returned
+        $this->assertNotNull($res);
+        $this->assertEquals(1, $res->numberOfRows);
+
+        // And that it is of type Query
+        $this->assertInstanceOf(Query::class, $res);
+    }
 }
