@@ -163,6 +163,11 @@ class Database
                 throw new InvalidArgumentException('No query provided.');
             }
 
+            // Are we a wrapped array?
+            if(is_array($query[0])) {
+                $query = $query[0];
+            }
+
             // The query is valid, so parse it
             $parsedQuery = $this->__parse($query);
 

@@ -240,10 +240,10 @@ class Query implements ArrayAccess
         // Build the query
         $query = sprintf(
             'SELECT COUNT(1) AS row_count FROM ( %s ) row_count',
-            $this->query
+            $this->originalQuery
         );
 
-        return $this->pdo->query($query, $this->parameters)->numberOfRows;
+        return $this->pdo->query(array_merge([$query], $this->originalParameters))->numberOfRows;
     }
 
     /**
