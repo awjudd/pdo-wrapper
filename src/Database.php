@@ -309,6 +309,13 @@ class Database
         // The object to be returned after hydrating
         $parsedQuery = null;
 
+        // Clean the query
+        $query[0] = trim($query[0]);
+
+        if(preg_match('/;$/', $query[0])) {
+            $query[0] = substr($query[0], 0, strlen($query[0]) - 1);
+        }
+
         // The first element of the array will be the query
         switch ($this->config->queryMode) {
             case Configuration::QUERY_CLASSIC:
